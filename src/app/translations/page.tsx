@@ -4,19 +4,24 @@ import React from "react";
 import TranslationCard from "./translation-card";
 
 async function getData(userId: string) {
-  const sql = neon(process.env.DATABASE_URL as string);
-  const response = await sql`
-    SELECT 
-      source_language, 
-      target_language, 
-      COUNT(*) AS translation_count,
-      ARRAY_AGG(source_text) AS source_texts,
-      ARRAY_AGG(translated_text) AS translated_texts
-    FROM translations
-    WHERE user_id = ${userId}
-    GROUP BY source_language, target_language;
+  try {
+    const sql = neon(process.env.DATABASE_URL as string);
+    const response = await sql`
+      SELECT 
+        source_language, 
+        target_language, 
+        COUNT(*) AS translation_count,
+        ARRAY_AGG(source_text) AS source_texts,
+        ARRAY_AGG(translated_text) AS translated_texts
+      FROM translations
+      WHERE user_id = ${userId}
+      GROUP BY source_language, target_language;
     `;
-  return response;
+    return response;
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    return [];
+  }
 }
 
 export default async function TranslationsPage() {
